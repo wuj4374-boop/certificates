@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>孙可慧的证明小屋</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">孙可慧的证明小屋</a>
+            <div class="nav-links">
+                <a href="#certificates">个人证明</a>
+                <a href="#skills">技能展示</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">孙可慧的证明小屋</h1>
+            <p class="hero-subtitle">每一份证明，都是成长的印记</p>
+            <div class="hero-line"></div>
+            <p class="hero-desc">记录 · 见证 · 前行</p>
+        </div>
+        <div class="hero-scroll">
+            <span>向下探索</span>
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
+
+    <!-- Certificates Section -->
+    <section id="certificates" class="section cert-section">
+        <div class="section-header">
+            <h2 class="section-title">个人证明材料总览</h2>
+            <div class="section-line"></div>
+            <p class="section-desc">点击图片可查看大图</p>
+        </div>
+        <div class="cert-grid" id="certGrid">
+            <!-- Certificates will be loaded by JavaScript -->
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="section skills-section">
+        <div class="section-header">
+            <h2 class="section-title">小小技能展示</h2>
+            <div class="section-line"></div>
+            <p class="section-desc">专业技能与实践成果</p>
+        </div>
+
+        <div class="skills-container">
+            <!-- BIM Revit Model -->
+            <div class="skill-card">
+                <div class="skill-card-header">
+                    <span class="skill-tag">BIM 建模</span>
+                    <h3>Revit 建筑模型</h3>
+                </div>
+                <div class="skill-card-image">
+                    <img src="assets/skills/bim_revit.jpg" alt="BIM Revit建筑模型" loading="lazy">
+                    <div class="skill-img-overlay" onclick="openLightbox(this)">
+                        <span>点击查看大图</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revit Source File -->
+            <div class="skill-card">
+                <div class="skill-card-header">
+                    <span class="skill-tag">源文件</span>
+                    <h3>Revit 源文件下载</h3>
+                </div>
+                <div class="skill-card-body">
+                    <p class="skill-desc">孙可慧 Revit 建模源文件，含完整建筑信息模型</p>
+                    <a href="assets/downloads/孙可慧revit建模.rvt" download class="download-btn">
+                        <span class="download-icon">↓</span>
+                        <span>下载 Revit 源文件 (.rvt)</span>
+                        <span class="file-size">21 MB</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- CAD Design -->
+            <div class="skill-card">
+                <div class="skill-card-header">
+                    <span class="skill-tag">CAD 设计</span>
+                    <h3>CAD 平面设计</h3>
+                </div>
+                <div class="skill-card-image">
+                    <img src="assets/skills/cad_design.jpg" alt="CAD平面设计" loading="lazy">
+                    <div class="skill-img-overlay" onclick="openLightbox(this)">
+                        <span>点击查看大图</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guanglianda Downloads -->
+            <div class="skill-card">
+                <div class="skill-card-header">
+                    <span class="skill-tag">广联达</span>
+                    <h3>广联达作品源文件</h3>
+                </div>
+                <div class="skill-card-body">
+                    <p class="skill-desc">包含投标文件、算量文件、计价文件等完整项目资料</p>
+                    <div class="download-list">
+                        <a href="assets/downloads/19孙可慧投标文件.GT72" download class="download-btn">
+                            <span class="download-icon">↓</span>
+                            <span>投标文件 (.GT72)</span>
+                            <span class="file-size">2.8 MB</span>
+                        </a>
+                        <a href="assets/downloads/1号办公楼造价二班17孙可慧+(1)+(1)111 (2).GTJ" download class="download-btn">
+                            <span class="download-icon">↓</span>
+                            <span>算量文件 (.GTJ)</span>
+                            <span class="file-size">7.2 MB</span>
+                        </a>
+                        <a href="assets/downloads/1号办公楼造价二班17孙可慧1111.GBQ6" download class="download-btn">
+                            <span class="download-icon">↓</span>
+                            <span>计价文件 (.GBQ6)</span>
+                            <span class="file-size">2.0 MB</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-name">孙可慧的证明小屋</p>
+            <p class="footer-copy">© 2026 孙可慧 &mdash; 每一份努力都值得被记录</p>
+        </div>
+    </footer>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+        <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+        <div class="lightbox-content">
+            <img id="lightboxImg" src="" alt="">
+            <p class="lightbox-caption" id="lightboxCaption"></p>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
