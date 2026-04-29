@@ -1,1524 +1,170 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>吴俊超 · 个人材料数字展馆</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --wall: #080706;
-  --wall-light: #0d0b0a;
-  --wall-warm: #100d0a;
-  --text-primary: #ece8e0;
-  --text-secondary: rgba(236, 232, 224, 0.5);
-  --text-muted: rgba(236, 232, 224, 0.18);
-  --gold: #c4a86a;
-  --gold-dim: rgba(196, 168, 106, 0.08);
-  --gold-glow: rgba(196, 168, 106, 0.04);
-  --spotlight: rgba(255, 240, 210, 0.03);
-  --frame-border: rgba(196, 168, 106, 0.12);
-  --frame-hover: rgba(196, 168, 106, 0.25);
-  --radius: 2px;
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-smooth: cubic-bezier(0.65, 0, 0.35, 1);
-}
-
-html { scroll-behavior: smooth; }
-
-body {
-  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: var(--wall);
-  color: var(--text-primary);
-  min-height: 100vh;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-::selection { background: rgba(196, 168, 106, 0.25); color: #fff; }
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(236,232,224,0.06); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(236,232,224,0.1); }
-
-/* ===== Gallery Wall ===== */
-.wall {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Base gradient — gallery wall */
-.wall-base {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 100% 50% at 50% 0%, rgba(60,50,30,0.04) 0%, transparent 70%),
-    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(40,35,25,0.03) 0%, transparent 60%),
-    linear-gradient(180deg, #080706 0%, #0b0907 30%, #0d0b08 60%, #090807 100%);
-}
-
-/* Subtle wall texture */
-.wall-noise {
-  position: absolute;
-  inset: 0;
-  opacity: 0.015;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 256px 256px;
-}
-
-/* Warm ambient glow */
-.wall-ambient {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.15;
-}
-.wall-ambient-1 {
-  width: 600px; height: 600px;
-  background: var(--gold);
-  top: -20%; left: -10%;
-  animation: ambDrift1 40s ease-in-out infinite;
-}
-.wall-ambient-2 {
-  width: 500px; height: 500px;
-  background: var(--gold);
-  bottom: -15%; right: -10%;
-  animation: ambDrift2 35s ease-in-out infinite;
-  opacity: 0.08;
-}
-
-@keyframes ambDrift1 {
-  0%, 100% { transform: translate(0, 0); }
-  33% { transform: translate(60px, -40px); }
-  66% { transform: translate(-30px, 30px); }
-}
-@keyframes ambDrift2 {
-  0%, 100% { transform: translate(0, 0); }
-  33% { transform: translate(-50px, -60px); }
-  66% { transform: translate(40px, 20px); }
-}
-
-/* ===== Loading ===== */
-.load-curtain {
-  position: fixed;
-  inset: 0;
-  background: var(--wall);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 1s ease, visibility 1s ease;
-}
-.load-curtain.done {
-  opacity: 0;
-  visibility: hidden;
-}
-
-.load-sign {
-  font-size: 0.65rem;
-  letter-spacing: 0.5em;
-  color: var(--text-muted);
-  font-weight: 200;
-  animation: loadPulse 2s ease-in-out infinite;
-}
-
-@keyframes loadPulse {
-  0%, 100% { opacity: 0.15; }
-  50% { opacity: 0.5; }
-}
-
-/* ===== Exhibition Entrance (Hero) ===== */
-.entrance {
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 40px 24px;
-}
-
-/* Portal glow */
-.entrance::before {
-  content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 600px; height: 600px;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(196,168,106,0.025) 0%, transparent 60%);
-  pointer-events: none;
-}
-
-.entrance-label {
-  font-size: 0.55rem;
-  letter-spacing: 0.6em;
-  color: var(--text-muted);
-  font-weight: 200;
-  margin-bottom: 32px;
-  opacity: 0;
-  animation: fadeSlideUp 1.2s var(--ease-out) 0.3s forwards;
-}
-
-.entrance-title {
-  position: relative;
-  font-size: clamp(2.8rem, 7vw, 5.5rem);
-  font-weight: 200;
-  letter-spacing: 0.25em;
-  line-height: 1.25;
-  color: var(--text-primary);
-  opacity: 0;
-  transform: translateY(40px);
-  animation: fadeSlideUp 1.4s var(--ease-out) 0.5s forwards;
-}
-
-.entrance-title em {
-  font-style: normal;
-  display: block;
-  font-size: 0.45em;
-  letter-spacing: 0.5em;
-  font-weight: 200;
-  color: var(--text-secondary);
-  margin-top: 12px;
-}
-
-.entrance-divider {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 40px auto;
-  opacity: 0;
-  animation: fadeIn 1s ease 1.4s forwards;
-}
-
-.entrance-divider .line {
-  width: 40px;
-  height: 0.5px;
-}
-.entrance-divider .line:first-child {
-  background: linear-gradient(90deg, transparent, rgba(196,168,106,0.15));
-}
-.entrance-divider .line:last-child {
-  background: linear-gradient(90deg, rgba(196,168,106,0.15), transparent);
-}
-
-.entrance-divider .diamond {
-  width: 4px;
-  height: 4px;
-  background: rgba(196,168,106,0.15);
-  transform: rotate(45deg);
-  flex-shrink: 0;
-}
-
-.entrance-sub {
-  font-size: clamp(0.6rem, 1vw, 0.75rem);
-  letter-spacing: 0.5em;
-  color: var(--text-secondary);
-  font-weight: 200;
-  opacity: 0;
-  animation: fadeIn 1s ease 1.8s forwards;
-}
-
-.entrance-hint {
-  position: absolute;
-  bottom: 48px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  opacity: 0;
-  animation: fadeIn 1s ease 2.8s forwards;
-}
-
-.hint-ring {
-  width: 24px; height: 24px;
-  border: 0.5px solid rgba(236,232,224,0.08);
-  border-radius: 50%;
-  position: relative;
-  animation: hintPulse 4s ease-in-out infinite;
-}
-.hint-ring::after {
-  content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 2px; height: 2px;
-  border-radius: 50%;
-  background: rgba(236,232,224,0.15);
-  transform: translate(-50%, -50%);
-  animation: hintDot 4s ease-in-out infinite;
-}
-.hint-text {
-  font-size: 0.45rem;
-  letter-spacing: 0.4em;
-  color: var(--text-muted);
-  font-weight: 200;
-}
-
-@keyframes hintPulse {
-  0%, 100% { opacity: 0.2; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.05); }
-}
-@keyframes hintDot {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.1; }
-  50% { transform: translate(-50%, -50%) scale(2); opacity: 0.4; }
-}
-@keyframes fadeSlideUp {
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes fadeIn {
-  to { opacity: 1; }
-}
-
-/* ===== Gallery Section Marker ===== */
-.gallery-marker {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 60px 24px;
-  text-align: center;
-}
-
-.gallery-marker .track {
-  width: 0.5px;
-  height: 60px;
-  background: linear-gradient(180deg, transparent, rgba(196,168,106,0.06), transparent);
-}
-
-.gallery-marker .label {
-  font-size: 0.45rem;
-  letter-spacing: 0.6em;
-  color: var(--text-muted);
-  font-weight: 200;
-  margin-top: 16px;
-  text-transform: uppercase;
-}
-
-/* ===== Exhibit (Certificate) ===== */
-.exhibit {
-  position: relative;
-  z-index: 1;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  padding: 80px 40px;
-  opacity: 0;
-  transform: translateY(60px);
-  transition: opacity 1.2s var(--ease-out), transform 1.2s var(--ease-out);
-}
-
-.exhibit.reveal {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.exhibit-inner {
-  display: flex;
-  align-items: center;
-  gap: 60px;
-  width: 100%;
-  max-width: 1300px;
-  margin: 0 auto;
-}
-
-.exhibit:nth-child(even) .exhibit-inner {
-  flex-direction: row-reverse;
-}
-
-/* Spotlight beam */
-.exhibit::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 100%;
-  background: radial-gradient(ellipse 60% 30% at 50% -10%, var(--spotlight) 0%, transparent 70%);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 1.5s ease;
-}
-
-.exhibit.reveal::before {
-  opacity: 1;
-}
-
-/* Artwork frame */
-.exhibit-frame {
-  position: relative;
-  flex: 0 0 min(55%, 700px);
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  cursor: pointer;
-  background: linear-gradient(145deg, rgba(236,232,224,0.02) 0%, rgba(236,232,224,0.005) 100%);
-  box-shadow:
-    0 0 0 0.5px var(--frame-border),
-    inset 0 0 0 0.5px rgba(236,232,224,0.02),
-    0 8px 40px rgba(0,0,0,0.5);
-  transition: box-shadow 1s var(--ease-out);
-}
-
-.exhibit-frame::before {
-  content: '';
-  position: absolute;
-  inset: -0.5px;
-  z-index: -1;
-  background: linear-gradient(160deg, rgba(196,168,106,0.12) 0%, transparent 40%, transparent 60%, rgba(196,168,106,0.06) 100%);
-  opacity: 0;
-  transition: opacity 1s var(--ease-out);
-}
-
-.exhibit-frame:hover::before {
-  opacity: 1;
-}
-
-.exhibit-frame::after {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(236,232,224,0.03), transparent);
-  transform: skewX(-25deg);
-  transition: left 1.2s var(--ease-out);
-  pointer-events: none;
-  z-index: 2;
-}
-
-.exhibit-frame:hover::after {
-  left: 150%;
-}
-
-.exhibit-frame img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 1.2s var(--ease-out), opacity 1s ease;
-  opacity: 0.92;
-}
-
-.exhibit-frame:hover img {
-  transform: scale(1.04);
-  opacity: 1;
-}
-
-.exhibit-frame:hover {
-  box-shadow:
-    0 0 0 0.5px var(--frame-hover),
-    inset 0 0 0 0.5px rgba(236,232,224,0.04),
-    0 12px 60px rgba(0,0,0,0.6),
-    0 0 80px rgba(196,168,106,0.02);
-}
-
-/* Frame overlay icon */
-.exhibit-open {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.8s ease;
-  z-index: 3;
-  pointer-events: none;
-}
-
-.exhibit-frame:hover .exhibit-open {
-  opacity: 1;
-}
-
-.exhibit-open span {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 0.5px solid rgba(236,232,224,0.08);
-  background: rgba(0,0,0,0.3);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(236,232,224,0.35);
-  font-size: 1rem;
-  font-weight: 200;
-  transform: translateY(6px);
-  transition: transform 0.6s var(--ease-out);
-}
-
-.exhibit-frame:hover .exhibit-open span {
-  transform: translateY(0);
-}
-
-/* Exhibit label (museum-style wall text) */
-.exhibit-label {
-  flex: 1;
-  min-width: 200px;
-}
-
-.exhibit-label .num {
-  font-size: 0.55rem;
-  letter-spacing: 0.3em;
-  color: var(--text-muted);
-  font-weight: 300;
-  margin-bottom: 16px;
-}
-
-.exhibit-label .num::before {
-  content: '— ';
-}
-
-.exhibit-label h2 {
-  font-size: clamp(1.1rem, 2vw, 1.6rem);
-  font-weight: 250;
-  letter-spacing: 0.18em;
-  color: var(--text-primary);
-  margin-bottom: 6px;
-  line-height: 1.4;
-}
-
-.exhibit-label .desc {
-  font-size: 0.75rem;
-  letter-spacing: 0.15em;
-  color: var(--text-secondary);
-  font-weight: 200;
-  line-height: 1.6;
-}
-
-.exhibit-label .sep {
-  display: block;
-  width: 20px;
-  height: 0.5px;
-  background: rgba(196,168,106,0.1);
-  margin-top: 14px;
-}
-
-/* ===== Archive Section (Skills) ===== */
-.archive {
-  position: relative;
-  z-index: 1;
-  padding: 120px 40px 100px;
-  opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 1.2s var(--ease-out), transform 1.2s var(--ease-out);
-}
-
-.archive.reveal {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.archive::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(196,168,106,0.06), transparent);
-}
-
-.archive-header {
-  text-align: center;
-  margin-bottom: 80px;
-}
-
-.archive-header .label {
-  font-size: 0.5rem;
-  letter-spacing: 0.6em;
-  color: var(--text-muted);
-  font-weight: 200;
-  text-transform: uppercase;
-  margin-bottom: 20px;
-  display: block;
-}
-
-.archive-header h2 {
-  font-size: clamp(1.4rem, 2.5vw, 2rem);
-  font-weight: 200;
-  letter-spacing: 0.25em;
-  color: var(--text-primary);
-}
-
-.archive-header .ornament {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin: 20px auto 16px;
-}
-
-.archive-header .ornament span {
-  display: block;
-  width: 16px;
-  height: 0.5px;
-  background: rgba(196,168,106,0.08);
-}
-
-.archive-header .ornament i {
-  display: block;
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background: rgba(196,168,106,0.1);
-}
-
-.archive-header .sub {
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
-  color: var(--text-secondary);
-  font-weight: 200;
-}
-
-.archive-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  max-width: 1300px;
-  margin: 0 auto;
-}
-
-/* Archive vitrine (display case) */
-.vitrine {
-  background: linear-gradient(145deg, rgba(236,232,224,0.02) 0%, rgba(236,232,224,0.005) 100%);
-  border: 0.5px solid rgba(236,232,224,0.04);
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 1s var(--ease-out), transform 1s var(--ease-out), border-color 0.8s ease;
-}
-
-.vitrine.reveal {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.vitrine:hover {
-  border-color: rgba(196,168,106,0.06);
-}
-
-.vitrine-header {
-  padding: 20px 24px 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  border-bottom: 0.5px solid rgba(236,232,224,0.03);
-}
-
-.vitrine-header h3 {
-  font-size: 0.75rem;
-  font-weight: 350;
-  letter-spacing: 0.2em;
-  color: var(--text-primary);
-}
-
-.vitrine-header .count {
-  font-size: 0.5rem;
-  color: var(--text-muted);
-  letter-spacing: 0.1em;
-  font-weight: 200;
-}
-
-.vitrine-body {
-  padding: 8px 0;
-  max-height: 340px;
-  overflow-y: auto;
-}
-
-.vitrine-body::-webkit-scrollbar { width: 2px; }
-.vitrine-body::-webkit-scrollbar-track { background: transparent; }
-.vitrine-body::-webkit-scrollbar-thumb { background: rgba(236,232,224,0.02); border-radius: 1px; }
-
-.vitrine-body a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 24px;
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 0.65rem;
-  letter-spacing: 0.05em;
-  transition: color 0.4s ease, padding-left 0.4s ease, background 0.4s ease;
-  font-weight: 200;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.vitrine-body a::before {
-  content: '';
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background: var(--text-muted);
-  flex-shrink: 0;
-  transition: background 0.4s ease;
-}
-
-.vitrine-body a:hover {
-  color: var(--text-primary);
-  padding-left: 28px;
-  background: rgba(196,168,106,0.02);
-}
-
-.vitrine-body a:hover::before {
-  background: var(--gold);
-}
-
-.vitrine-folder {
-  padding: 12px 24px 4px;
-  font-size: 0.45rem;
-  color: var(--text-muted);
-  letter-spacing: 0.25em;
-  font-weight: 300;
-  text-transform: uppercase;
-  opacity: 0.4;
-}
-
-/* ===== Visit Card (QR) ===== */
-.visit-card {
-  position: relative;
-  z-index: 1;
-  padding: 100px 40px 60px;
-  opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 1.2s var(--ease-out), transform 1.2s var(--ease-out);
-}
-
-.visit-card.reveal {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.visit-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(196,168,106,0.06), transparent);
-}
-
-.visit-inner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 60px;
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 48px;
-  background: linear-gradient(145deg, rgba(236,232,224,0.015) 0%, rgba(236,232,224,0.005) 100%);
-  border: 0.5px solid rgba(236,232,224,0.04);
-}
-
-.visit-info {
-  flex: 1;
-}
-
-.visit-label {
-  font-size: 0.5rem;
-  letter-spacing: 0.6em;
-  color: var(--text-muted);
-  font-weight: 200;
-  text-transform: uppercase;
-  display: block;
-  margin-bottom: 16px;
-}
-
-.visit-info h2 {
-  font-size: clamp(1rem, 1.8vw, 1.3rem);
-  font-weight: 250;
-  letter-spacing: 0.2em;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.visit-desc {
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-  color: var(--text-secondary);
-  font-weight: 200;
-  line-height: 1.6;
-  margin-bottom: 20px;
-}
-
-.visit-link {
-  display: inline-block;
-  font-size: 0.55rem;
-  letter-spacing: 0.05em;
-  color: var(--gold);
-  text-decoration: none;
-  font-weight: 200;
-  padding: 8px 16px;
-  border: 0.5px solid rgba(196,168,106,0.1);
-  transition: border-color 0.4s ease, background 0.4s ease;
-  word-break: break-all;
-}
-
-.visit-link:hover {
-  border-color: rgba(196,168,106,0.25);
-  background: rgba(196,168,106,0.02);
-}
-
-.visit-qr {
-  flex: 0 0 auto;
-  text-align: center;
-}
-
-.visit-qr img {
-  display: block;
-  width: 120px;
-  height: 120px;
-  border: 0.5px solid rgba(236,232,224,0.06);
-  opacity: 0.85;
-  transition: opacity 0.6s ease;
-}
-
-.visit-qr img:hover {
-  opacity: 1;
-}
-
-.visit-scan {
-  display: block;
-  margin-top: 10px;
-  font-size: 0.45rem;
-  letter-spacing: 0.3em;
-  color: var(--text-muted);
-  font-weight: 200;
-}
-
-@media (max-width: 600px) {
-  .visit-card { padding: 60px 20px 40px; }
-  .visit-inner {
-    flex-direction: column-reverse;
-    gap: 24px;
-    padding: 32px 24px;
-    text-align: center;
-  }
-  .visit-qr img { width: 100px; height: 100px; }
-}
-
-/* ===== Footer ===== */
-.gallery-footer {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  padding: 60px 24px 40px;
-  color: var(--text-muted);
-  font-size: 0.55rem;
-  letter-spacing: 0.25em;
-  font-weight: 200;
-  border-top: 0.5px solid rgba(196,168,106,0.03);
-}
-
-.gallery-footer .f-ornament {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.gallery-footer .f-ornament span {
-  width: 12px;
-  height: 0.5px;
-  background: rgba(196,168,106,0.05);
-}
-
-.gallery-footer .f-ornament i {
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background: rgba(196,168,106,0.06);
-}
-
-/* ===== Viewing Room (Lightbox) ===== */
-.viewing-room {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.95);
-  z-index: 9999;
-  justify-content: center;
-  align-items: center;
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-}
-
-.viewing-room.active {
-  display: flex;
-}
-
-.viewing-room .vr-content {
-  max-width: 90vw;
-  max-height: 85vh;
-  object-fit: contain;
-  box-shadow: 0 20px 80px rgba(0,0,0,0.6);
-  animation: vrEnter 0.6s var(--ease-out);
-}
-
-@keyframes vrEnter {
-  from { transform: scale(0.92); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-.vr-close {
-  position: absolute;
-  top: 28px; right: 32px;
-  width: 40px; height: 40px;
-  cursor: pointer;
-  opacity: 0.12;
-  transition: opacity 0.4s;
-  background: none; border: none;
-  color: #fff;
-  font-size: 20px;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 200;
-  z-index: 10;
-  font-family: inherit;
-}
-
-.vr-close:hover { opacity: 0.3; }
-
-.vr-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  color: rgba(255,255,255,0.08);
-  cursor: pointer;
-  opacity: 0.3;
-  transition: opacity 0.4s, color 0.4s;
-  background: none; border: none;
-  padding: 24px;
-  font-size: 20px;
-  font-weight: 200;
-  z-index: 10;
-  font-family: inherit;
-}
-
-.vr-nav:hover { opacity: 0.5; color: rgba(255,255,255,0.3); }
-.vr-prev { left: 4px; }
-.vr-next { right: 4px; }
-
-.vr-counter {
-  position: absolute;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(255,255,255,0.08);
-  font-size: 0.5rem;
-  letter-spacing: 0.25em;
-  z-index: 10;
-  font-weight: 200;
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 1024px) {
-  .archive-grid { grid-template-columns: repeat(2, 1fr); }
-  .exhibit-inner { gap: 40px; }
-  .exhibit-frame { flex: 0 0 min(50%, 500px); }
-}
-
-@media (max-width: 768px) {
-  .exhibit { padding: 60px 24px; min-height: auto; }
-  .exhibit-inner {
-    flex-direction: column !important;
-    gap: 24px;
-  }
-  .exhibit-frame { flex: 0 0 100%; width: 100%; }
-  .exhibit-label { text-align: left; width: 100%; }
-  .exhibit-label .num::before { content: '— '; }
-  .exhibit-label .sep { margin-left: 0; }
-  .archive-grid { grid-template-columns: 1fr; gap: 16px; }
-  .archive { padding: 80px 20px 60px; }
-  .entrance-title { letter-spacing: 0.15em; }
-  .vitrine-body { max-height: 260px; }
-  .vr-nav { padding: 16px; font-size: 16px; }
-  .vr-prev { left: 2px; }
-  .vr-next { right: 2px; }
-}
-
-@media (max-width: 480px) {
-  .exhibit { padding: 40px 16px; }
-  .exhibit-inner { gap: 16px; }
-  .exhibit-label h2 { font-size: 1rem; }
-  .archive-grid { gap: 12px; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>孙可慧的证明小屋</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
 <body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">孙可慧的证明小屋</a>
+            <div class="nav-links">
+                <a href="#certificates">个人证明</a>
+                <a href="#skills">技能展示</a>
+            </div>
+        </div>
+    </nav>
 
-<!-- Loading Curtain -->
-<div class="load-curtain" id="loadCurtain">
-  <span class="load-sign">载入展品</span>
-</div>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">孙可慧的证明小屋</h1>
+            <p class="hero-subtitle">每一份证明，都是成长的印记</p>
+            <div class="hero-line"></div>
+            <p class="hero-desc">记录 · 见证 · 前行</p>
+        </div>
+        <div class="hero-scroll">
+            <span>向下探索</span>
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
 
-<!-- Gallery Wall -->
-<div class="wall">
-  <div class="wall-base"></div>
-  <div class="wall-ambient wall-ambient-1"></div>
-  <div class="wall-ambient wall-ambient-2"></div>
-  <div class="wall-noise"></div>
-</div>
+    <!-- Certificates Section -->
+    <section id="certificates" class="section cert-section">
+        <div class="section-header">
+            <h2 class="section-title">个人证明材料总览</h2>
+            <div class="section-line"></div>
+            <p class="section-desc">点击图片可查看大图</p>
+        </div>
+        <div class="cert-grid" id="certGrid">
+            <!-- Certificates will be loaded by JavaScript -->
+        </div>
+    </section>
 
-<!-- Entrance -->
-<section class="entrance">
-  <p class="entrance-label">— 个人材料 · 数字展馆 —</p>
-  <h1 class="entrance-title">
-    吴俊超
-    <em>个人材料证明 · 数字档案</em>
-  </h1>
-  <div class="entrance-divider">
-    <span class="line"></span>
-    <span class="diamond"></span>
-    <span class="line"></span>
-  </div>
-  <p class="entrance-sub">诚信 · 真实 · 可靠</p>
-  <div class="entrance-hint">
-    <div class="hint-ring"></div>
-    <span class="hint-text">浏览展厅</span>
-  </div>
-</section>
+    <!-- Skills Section -->
+    <section id="skills" class="section skills-section">
+        <div class="section-header">
+            <h2 class="section-title">小小技能展示</h2>
+            <div class="section-line"></div>
+            <p class="section-desc">专业技能与实践成果</p>
+        </div>
 
-<!-- Gallery Marker -->
-<div class="gallery-marker">
-  <div class="track"></div>
-  <span class="label">展品陈列</span>
-</div>
+        <div class="skills-container">
+            <!-- BIM Revit Model -->
+            <div class="skill-card">
+                <div class="skill-card-header">
+                    <span class="skill-tag">BIM 建模</span>
+                    <h3>Revit 建筑模型</h3>
+                </div>
+                <div class="skill-card-image">
+                    <img src="assets/skills/bim_revit.jpg" alt="BIM Revit建筑模型" loading="lazy">
+                    <div class="skill-img-overlay" onclick="openLightbox(this)">
+                        <span>点击查看大图</span>
+                    </div>
+                </div>
+            </div>
 
-<!-- Exhibits -->
-<section class="exhibit" data-index="0">
-  <div class="exhibit-inner">
-    <div class="exhibit-frame" onclick="openViewingRoom(0)">
-      <img src="1193a5b8a266cd8c96aeae2e65bff04d.jpg" alt="2024-2025 三好学生" loading="lazy">
-      <div class="exhibit-open"><span>⊕</span></div>
-    </div>
-    <div class="exhibit-label">
-      <p class="num">展品 No.01</p>
-      <h2>2024–2025</h2>
-      <p class="desc">"三好学生"证书</p>
-      <span class="sep"></span>
-    </div>
-  </div>
-</section>
+            <!-- Revit Source File -->
+            <div class="skill-card">
+                <div class="skill-card-header">
+                    <span class="skill-tag">源文件</span>
+                    <h3>Revit 源文件下载</h3>
+                </div>
+                <div class="skill-card-body">
+                    <p class="skill-desc">孙可慧 Revit 建模源文件，含完整建筑信息模型</p>
+                    <a href="https://github.com/wuj4374-boop/certificates/releases/download/v1.0/SunKehui_Revit_Model.rvt" download class="download-btn">
+                        <span class="download-icon">↓</span>
+                        <span>下载 Revit 源文件 (.rvt)</span>
+                        <span class="file-size">21 MB</span>
+                    </a>
+                </div>
+            </div>
 
-<section class="exhibit" data-index="1">
-  <div class="exhibit-inner">
-    <div class="exhibit-frame" onclick="openViewingRoom(1)">
-      <img src="6a27b51c157f8b76ea7c345851a469e9.jpg" alt="2024-2025 校二等优秀奖学金" loading="lazy">
-      <div class="exhibit-open"><span>⊕</span></div>
-    </div>
-    <div class="exhibit-label">
-      <p class="num">展品 No.02</p>
-      <h2>2024–2025</h2>
-      <p class="desc">"校二等优秀奖学金"证书</p>
-      <span class="sep"></span>
-    </div>
-  </div>
-</section>
+            <!-- CAD Design -->
+            <div class="skill-card">
+                <div class="skill-card-header">
+                    <span class="skill-tag">CAD 设计</span>
+                    <h3>CAD 平面设计</h3>
+                </div>
+                <div class="skill-card-image">
+                    <img src="assets/skills/cad_design.jpg" alt="CAD平面设计" loading="lazy">
+                    <div class="skill-img-overlay" onclick="openLightbox(this)">
+                        <span>点击查看大图</span>
+                    </div>
+                </div>
+            </div>
 
-<section class="exhibit" data-index="2">
-  <div class="exhibit-inner">
-    <div class="exhibit-frame" onclick="openViewingRoom(2)">
-      <img src="921244316addf835d39cf58a52ff25fd.jpg" alt="2024年6月 普通话证书" loading="lazy">
-      <div class="exhibit-open"><span>⊕</span></div>
-    </div>
-    <div class="exhibit-label">
-      <p class="num">展品 No.03</p>
-      <h2>2024年6月</h2>
-      <p class="desc">普通话水平测试等级证书</p>
-      <span class="sep"></span>
-    </div>
-  </div>
-</section>
+            <!-- Guanglianda Downloads -->
+            <div class="skill-card">
+                <div class="skill-card-header">
+                    <span class="skill-tag">广联达</span>
+                    <h3>广联达作品源文件</h3>
+                </div>
+                <div class="skill-card-body">
+                    <p class="skill-desc">包含投标文件、算量文件、计价文件等完整项目资料</p>
+                    <div class="download-list">
+                        <a href="https://github.com/wuj4374-boop/certificates/releases/download/v1.0/Toubiao_File.GT72" download class="download-btn">
+                            <span class="download-icon">↓</span>
+                            <span>投标文件 (.GT72)</span>
+                            <span class="file-size">2.8 MB</span>
+                        </a>
+                        <a href="https://github.com/wuj4374-boop/certificates/releases/download/v1.0/Suanliang_File.GTJ" download class="download-btn">
+                            <span class="download-icon">↓</span>
+                            <span>算量文件 (.GTJ)</span>
+                            <span class="file-size">7.2 MB</span>
+                        </a>
+                        <a href="https://github.com/wuj4374-boop/certificates/releases/download/v1.0/Jijia_File.GBQ6" download class="download-btn">
+                            <span class="download-icon">↓</span>
+                            <span>计价文件 (.GBQ6)</span>
+                            <span class="file-size">2.0 MB</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<section class="exhibit" data-index="3">
-  <div class="exhibit-inner">
-    <div class="exhibit-frame" onclick="openViewingRoom(3)">
-      <img src="ac01b796f6519456877d7b23ad661da1.jpg" alt="2025年9月 岳麓山桔子洲 优秀志愿者" loading="lazy">
-      <div class="exhibit-open"><span>⊕</span></div>
-    </div>
-    <div class="exhibit-label">
-      <p class="num">展品 No.04</p>
-      <h2>2025年9月 · 岳麓山桔子洲</h2>
-      <p class="desc">"优秀志愿者"证书</p>
-      <span class="sep"></span>
-    </div>
-  </div>
-</section>
-
-<section class="exhibit" data-index="4">
-  <div class="exhibit-inner">
-    <div class="exhibit-frame" onclick="openViewingRoom(4)">
-      <img src="d02f06f4addbf39bde3a223cc59a75d0.jpg" alt="2024年12月 国家励志奖学金" loading="lazy">
-      <div class="exhibit-open"><span>⊕</span></div>
-    </div>
-    <div class="exhibit-label">
-      <p class="num">展品 No.05</p>
-      <h2>2024年12月</h2>
-      <p class="desc">"国家励志奖学金"证书</p>
-      <span class="sep"></span>
-    </div>
-  </div>
-</section>
-
-<section class="exhibit" data-index="5">
-  <div class="exhibit-inner">
-    <div class="exhibit-frame" onclick="openViewingRoom(5)">
-      <img src="d980ad57474db3089f01ea93fc0b8c41.jpg" alt="2025年9月 市级优秀志愿者" loading="lazy">
-      <div class="exhibit-open"><span>⊕</span></div>
-    </div>
-    <div class="exhibit-label">
-      <p class="num">展品 No.06</p>
-      <h2>2025年9月</h2>
-      <p class="desc">"市级优秀志愿者"证书</p>
-      <span class="sep"></span>
-    </div>
-  </div>
-</section>
-
-<section class="exhibit" data-index="6">
-  <div class="exhibit-inner">
-    <div class="exhibit-frame" onclick="openViewingRoom(6)">
-      <img src="9d07e0859a319448a691587ee1e5c2cb.jpg" alt="2026年4月 实习优秀学生" loading="lazy">
-      <div class="exhibit-open"><span>⊕</span></div>
-    </div>
-    <div class="exhibit-label">
-      <p class="num">展品 No.07</p>
-      <h2>2026年4月</h2>
-      <p class="desc">"2026年度实习优秀学生"称号</p>
-      <span class="sep"></span>
-    </div>
-  </div>
-</section>
-
-<section class="exhibit" data-index="7">
-  <div class="exhibit-inner">
-    <div class="exhibit-frame" onclick="openViewingRoom(7)">
-      <img src="f9d15baf3b11c1e6b17efbd02a0b24e8.jpg" alt="其他材料 志愿时长" loading="lazy">
-      <div class="exhibit-open"><span>⊕</span></div>
-    </div>
-    <div class="exhibit-label">
-      <p class="num">展品 No.08</p>
-      <h2>其他材料</h2>
-      <p class="desc">志愿时长补充证明材料</p>
-      <span class="sep"></span>
-    </div>
-  </div>
-</section>
-
-<!-- Gallery Marker -->
-<div class="gallery-marker">
-  <div class="track"></div>
-  <span class="label">创作档案</span>
-</div>
-
-<!-- Archive (Skills) -->
-<section class="archive">
-  <div class="archive-header">
-    <span class="label">— 存档 —</span>
-    <h2>技能作品存档</h2>
-    <div class="ornament"><span></span><i></i><span></span></div>
-    <p class="sub">仅存部分手稿，许多早期作品已在迁移中散失</p>
-  </div>
-
-  <div class="archive-grid">
-    <!-- AutoCAD -->
-    <div class="vitrine">
-      <div class="vitrine-header">
-        <h3>AutoCAD</h3>
-        <span class="count">13 件</span>
-      </div>
-      <div class="vitrine-body">
-        <a href="AutoCAD/Drawin0.dwg" download>Drawin0.dwg</a>
-        <a href="AutoCAD/Drawing1.dwg" download>Drawing1.dwg</a>
-        <a href="AutoCAD/Drawing2.dwg" download>Drawing2.dwg</a>
-        <a href="AutoCAD/Drawing4.dwg" download>Drawing4.dwg</a>
-        <a href="AutoCAD/Drawing5.dwg" download>Drawing5.dwg</a>
-        <a href="AutoCAD/Drawing6.dwg" download>Drawing6.dwg</a>
-        <a href="AutoCAD/Drawing7.dwg" download>Drawing7.dwg</a>
-        <a href="AutoCAD/Drawing8.dwg" download>Drawing8.dwg</a>
-        <a href="AutoCAD/Drawing9.dwg" download>Drawing9.dwg</a>
-        <a href="AutoCAD/Drawingmax.dwg" download>Drawingmax.dwg</a>
-        <a href="AutoCAD/Drawingmin.dwg" download>Drawingmin.dwg</a>
-        <a href="AutoCAD/零件1-吴俊超.DWG" download>零件1-吴俊超.DWG</a>
-        <a href="AutoCAD/零件4.DWG" download>零件4.DWG</a>
-      </div>
+    <!-- QR Code Button -->
+    <div class="qr-float-btn" id="qrFloatBtn" onclick="toggleQR()">
+        <span>二维码</span>
     </div>
 
-    <!-- CATIA -->
-    <div class="vitrine">
-      <div class="vitrine-header">
-        <h3>CATIA</h3>
-        <span class="count">23 件</span>
-      </div>
-      <div class="vitrine-body">
-        <a href="CATIA/3-8.CATPart" download>3-8.CATPart</a>
-        <a href="CATIA/37.CATPart" download>37.CATPart</a>
-        <a href="CATIA/41.CATPart" download>41.CATPart</a>
-        <a href="CATIA/CX.CATPart" download>CX.CATPart</a>
-        <a href="CATIA/Part007.CATPart" download>Part007.CATPart</a>
-        <a href="CATIA/Part010.CATPart" download>Part010.CATPart</a>
-        <a href="CATIA/Part1.CATPart" download>Part1.CATPart</a>
-        <a href="CATIA/Part100.CATPart" download>Part100.CATPart</a>
-        <a href="CATIA/Part108.CATPart" download>Part108.CATPart</a>
-        <a href="CATIA/Part2.CATPart" download>Part2.CATPart</a>
-        <a href="CATIA/Part3.CATPart" download>Part3.CATPart</a>
-        <a href="CATIA/Part37.CATPart" download>Part37.CATPart</a>
-        <a href="CATIA/Part38.CATPart" download>Part38.CATPart</a>
-        <a href="CATIA/Part4.CATPart" download>Part4.CATPart</a>
-        <a href="CATIA/Part40.CATPart" download>Part40.CATPart</a>
-        <a href="CATIA/Part41.CATPart" download>Part41.CATPart</a>
-        <a href="CATIA/Part42.CATPart" download>Part42.CATPart</a>
-        <a href="CATIA/Part5daojiao.CATPart" download>Part5daojiao.CATPart</a>
-        <a href="CATIA/Part6lei.CATPart" download>Part6lei.CATPart</a>
-        <a href="CATIA/Part80.CATPart" download>Part80.CATPart</a>
-        <a href="CATIA/PartFangXingPan.CATPart" download>PartFangXingPan.CATPart</a>
-        <a href="CATIA/PartQiangTi.CATPart" download>PartQiangTi.CATPart</a>
-        <a href="CATIA/Partxiankuan.CATPart" download>Partxiankuan.CATPart</a>
-      </div>
+    <!-- QR Code Modal -->
+    <div class="qr-modal" id="qrModal" onclick="closeQR(event)">
+        <div class="qr-modal-content" onclick="event.stopPropagation()">
+            <button class="qr-close" onclick="closeQR()">✕</button>
+            <h3 class="qr-title">扫码访问</h3>
+            <p class="qr-desc">手机扫码即可打开本页面</p>
+            <div class="qr-code-wrapper">
+                <div id="qrcode"></div>
+            </div>
+            <p class="qr-url" id="qrUrl"></p>
+            <p class="qr-hint">国内用户可长按二维码图片保存后分享</p>
+        </div>
     </div>
 
-    <!-- Solidworks -->
-    <div class="vitrine">
-      <div class="vitrine-header">
-        <h3>Solidworks</h3>
-        <span class="count">100+ 件</span>
-      </div>
-      <div class="vitrine-body">
-        <div class="vitrine-folder">根目录</div>
-        <a href="Solidworks/123.SLDPRT" download>123.SLDPRT</a>
-        <a href="Solidworks/m8螺栓.SLDPRT" download>m8螺栓.SLDPRT</a>
-        <a href="Solidworks/上课内容-吴俊超.SLDPRT" download>上课内容-吴俊超.SLDPRT</a>
-        <a href="Solidworks/丝杠-吴俊超.SLDPRT" download>丝杠-吴俊超.SLDPRT</a>
-        <a href="Solidworks/主动轮-吴俊超.SLDPRT" download>主动轮-吴俊超.SLDPRT</a>
-        <a href="Solidworks/传动带-吴俊超.SLDASM" download>传动带-吴俊超.SLDASM</a>
-        <a href="Solidworks/传动带-吴俊超.SLDPRT" download>传动带-吴俊超.SLDPRT</a>
-        <a href="Solidworks/传送带轮廓-吴俊超.SLDPRT" download>传送带轮廓-吴俊超.SLDPRT</a>
-        <a href="Solidworks/低速轴组件-吴俊超.SLDASM" download>低速轴组件-吴俊超.SLDASM</a>
-        <a href="Solidworks/六棱柱-吴俊超.SLDPRT" download>六棱柱-吴俊超.SLDPRT</a>
-        <a href="Solidworks/半成品-吴俊超.SLDPRT" download>半成品-吴俊超.SLDPRT</a>
-        <a href="Solidworks/叉架类模型-吴俊超.SLDPRT" download>叉架类模型-吴俊超.SLDPRT</a>
-        <a href="Solidworks/圆柱销-吴俊超.SLDPRT" download>圆柱销-吴俊超.SLDPRT</a>
-        <a href="Solidworks/圆锥销-吴俊超.SLDPRT" download>圆锥销-吴俊超.SLDPRT</a>
-        <a href="Solidworks/垫圈-吴俊超.SLDPRT" download>垫圈-吴俊超.SLDPRT</a>
-        <a href="Solidworks/塞子.SLDPRT" download>塞子.SLDPRT</a>
-        <a href="Solidworks/填料压盖.SLDPRT" download>填料压盖.SLDPRT</a>
-        <a href="Solidworks/壳体.SLDPRT" download>壳体.SLDPRT</a>
-        <a href="Solidworks/实验模型-吴俊超.SLDPRT" download>实验模型-吴俊超.SLDPRT</a>
-        <a href="Solidworks/工程图1-吴俊超.SLDDRW" download>工程图1-吴俊超.SLDDRW</a>
-        <a href="Solidworks/带轮-吴俊超.SLDPRT" download>带轮-吴俊超.SLDPRT</a>
-        <a href="Solidworks/弹簧(1)-吴俊超.SLDPRT" download>弹簧(1)-吴俊超.SLDPRT</a>
-        <a href="Solidworks/手把.SLDPRT" download>手把.SLDPRT</a>
-        <a href="Solidworks/手盘-吴俊超.SLDPRT" download>手盘-吴俊超.SLDPRT</a>
-        <a href="Solidworks/扣子-吴俊超.SLDPRT" download>扣子-吴俊超.SLDPRT</a>
-        <a href="Solidworks/拉伸弹簧-吴俊超.SLDPRT" download>拉伸弹簧-吴俊超.SLDPRT</a>
-        <a href="Solidworks/拨叉-吴俊超.SLDPRT" download>拨叉-吴俊超.SLDPRT</a>
-        <a href="Solidworks/摇臂建模-吴俊超.SLDPRT" download>摇臂建模-吴俊超.SLDPRT</a>
-        <a href="Solidworks/支架建模-吴俊超.SLDPRT" download>支架建模-吴俊超.SLDPRT</a>
-        <a href="Solidworks/斜齿轮-吴俊超.SLDPRT" download>斜齿轮-吴俊超.SLDPRT</a>
-        <a href="Solidworks/普通平键-吴俊超.SLDPRT" download>普通平键-吴俊超.SLDPRT</a>
-        <a href="Solidworks/曲柄.SLDPRT" download>曲柄.SLDPRT</a>
-        <a href="Solidworks/曲面相贯2-吴俊超.SLDPRT" download>曲面相贯2-吴俊超.SLDPRT</a>
-        <a href="Solidworks/机架.SLDPRT" download>机架.SLDPRT</a>
-        <a href="Solidworks/杠铃-吴俊超.SLDDRW" download>杠铃-吴俊超.SLDDRW</a>
-        <a href="Solidworks/杠铃杆-吴俊超.SLDPRT" download>杠铃杆-吴俊超.SLDPRT</a>
-        <a href="Solidworks/杠铃片-吴俊超.SLDPRT" download>杠铃片-吴俊超.SLDPRT</a>
-        <a href="Solidworks/柱塞套-吴俊超.SLDPRT" download>柱塞套-吴俊超.SLDPRT</a>
-        <a href="Solidworks/案例草图-吴俊超.SLDPRT" download>案例草图-吴俊超.SLDPRT</a>
-        <a href="Solidworks/法兰盘1-吴俊超.SLDDRW" download>法兰盘1-吴俊超.SLDDRW</a>
-        <a href="Solidworks/法兰盘1-吴俊超.SLDPRT" download>法兰盘1-吴俊超.SLDPRT</a>
-        <a href="Solidworks/滑块.SLDPRT" download>滑块.SLDPRT</a>
-        <a href="Solidworks/瓶子-吴俊超.SLDPRT" download>瓶子-吴俊超.SLDPRT</a>
-        <a href="Solidworks/短轴-吴俊超.SLDPRT" download>短轴-吴俊超.SLDPRT</a>
-        <a href="Solidworks/端盖-吴俊超.SLDPRT" download>端盖-吴俊超.SLDPRT</a>
-        <a href="Solidworks/筋-吴俊超.SLDPRT" download>筋-吴俊超.SLDPRT</a>
-        <a href="Solidworks/练习1-吴俊超.SLDPRT" download>练习1-吴俊超.SLDPRT</a>
-        <a href="Solidworks/练习2-吴俊超.SLDPRT" download>练习2-吴俊超.SLDPRT</a>
-        <a href="Solidworks/练习3-吴俊超.SLDPRT" download>练习3-吴俊超.SLDPRT</a>
-        <a href="Solidworks/练习4-吴俊超.SLDPRT" download>练习4-吴俊超.SLDPRT</a>
-        <a href="Solidworks/考试11-吴俊超.SLDPRT" download>考试11-吴俊超.SLDPRT</a>
-        <a href="Solidworks/考试111-吴俊超.SLDPRT" download>考试111-吴俊超.SLDPRT</a>
-        <a href="Solidworks/考试1111-吴俊超.SLDPRT" download>考试1111-吴俊超.SLDPRT</a>
-        <a href="Solidworks/考试2-吴俊超.SLDPRT" download>考试2-吴俊超.SLDPRT</a>
-        <a href="Solidworks/考试22-吴俊超.SLDPRT" download>考试22-吴俊超.SLDPRT</a>
-        <a href="Solidworks/胡乱建模2-吴俊超.SLDPRT" download>胡乱建模2-吴俊超.SLDPRT</a>
-        <a href="Solidworks/胡乱构造-吴俊超.SLDPRT" download>胡乱构造-吴俊超.SLDPRT</a>
-        <a href="Solidworks/茶壶-吴俊超.SLDPRT" download>茶壶-吴俊超.SLDPRT</a>
-        <a href="Solidworks/草图-吴俊超.SLDPRT" download>草图-吴俊超.SLDPRT</a>
-        <a href="Solidworks/螺栓联结-吴俊超.SLDASM" download>螺栓联结-吴俊超.SLDASM</a>
-        <a href="Solidworks/螺栓联结-吴俊超.SLDDRW" download>螺栓联结-吴俊超.SLDDRW</a>
-        <a href="Solidworks/螺栓联结-吴俊超1.SLDDRW" download>螺栓联结-吴俊超1.SLDDRW</a>
-        <a href="Solidworks/螺纹连接件-吴俊超.SLDPRT" download>螺纹连接件-吴俊超.SLDPRT</a>
-        <a href="Solidworks/螺纹连接件（半成品）-吴俊超.SLDPRT" download>螺纹连接件（半成品）-吴俊超.SLDPRT</a>
-        <a href="Solidworks/螺钉-吴俊超.SLDPRT" download>螺钉-吴俊超.SLDPRT</a>
-        <a href="Solidworks/被动轮-吴俊超.SLDASM" download>被动轮-吴俊超.SLDASM</a>
-        <a href="Solidworks/装配体1.....SLDASM" download>装配体1.....SLDASM</a>
-        <a href="Solidworks/装配体2吴俊超.SLDASM" download>装配体2吴俊超.SLDASM</a>
-        <a href="Solidworks/装配体6-吴俊超.SLDASM" download>装配体6-吴俊超.SLDASM</a>
-        <a href="Solidworks/装配体6-吴俊超.SLDDRW" download>装配体6-吴俊超.SLDDRW</a>
-        <a href="Solidworks/课堂案例-吴俊超.SLDPRT" download>课堂案例-吴俊超.SLDPRT</a>
-        <a href="Solidworks/课堂案例1-吴俊超.SLDASM" download>课堂案例1-吴俊超.SLDASM</a>
-        <a href="Solidworks/车辆零件-吴俊超.SLDPRT" download>车辆零件-吴俊超.SLDPRT</a>
-        <a href="Solidworks/连接法兰盘-吴俊超.SLDPRT" download>连接法兰盘-吴俊超.SLDPRT</a>
-        <a href="Solidworks/连杆.SLDPRT" download>连杆.SLDPRT</a>
-        <a href="Solidworks/连杆建模-吴俊超.SLDPRT" download>连杆建模-吴俊超.SLDPRT</a>
-        <a href="Solidworks/零件-吴俊超.SLDPRT" download>零件-吴俊超.SLDPRT</a>
-        <a href="Solidworks/零件0.SLDPRT" download>零件0.SLDPRT</a>
-        <a href="Solidworks/零件1-吴俊超.SLDDRW" download>零件1-吴俊超.SLDDRW</a>
-        <a href="Solidworks/零件1-吴俊超.SLDPRT" download>零件1-吴俊超.SLDPRT</a>
-        <a href="Solidworks/零件2.SLDPRT" download>零件2.SLDPRT</a>
-        <a href="Solidworks/零件3.SLDPRT" download>零件3.SLDPRT</a>
-        <a href="Solidworks/零件31.SLDPRT" download>零件31.SLDPRT</a>
-        <a href="Solidworks/零件32.SLDPRT" download>零件32.SLDPRT</a>
-        <a href="Solidworks/零件4.SLDPRT" download>零件4.SLDPRT</a>
-        <a href="Solidworks/零件4shouji.SLDPRT" download>零件4shouji.SLDPRT</a>
-        <a href="Solidworks/零件4shouji1.SLDPRT" download>零件4shouji1.SLDPRT</a>
-        <a href="Solidworks/零件5.SLDPRT" download>零件5.SLDPRT</a>
-        <a href="Solidworks/零件6.SLDDRW" download>零件6.SLDDRW</a>
-        <a href="Solidworks/零件6.SLDPRT" download>零件6.SLDPRT</a>
-        <a href="Solidworks/零件7.SLDPRT" download>零件7.SLDPRT</a>
-        <a href="Solidworks/零件8.SLDPRT" download>零件8.SLDPRT</a>
-        <a href="Solidworks/齿轮-吴俊超.SLDPRT" download>齿轮-吴俊超.SLDPRT</a>
-        <a href="Solidworks/齿轮2-吴俊超.SLDPRT" download>齿轮2-吴俊超.SLDPRT</a>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-name">孙可慧的证明小屋</p>
+            <p class="footer-copy">© 2026 孙可慧 &mdash; 每一份努力都值得被记录</p>
+        </div>
+    </footer>
 
-        <div class="vitrine-folder">减速器</div>
-        <a href="Solidworks/减速器/上箱盖.SLDPRT" download>上箱盖.SLDPRT</a>
-        <a href="Solidworks/减速器/下箱体.SLDPRT" download>下箱体.SLDPRT</a>
-        <a href="Solidworks/减速器/减速器装配-吴俊超.SLDASM" download>减速器装配-吴俊超.SLDASM</a>
-        <a href="Solidworks/减速器/大垫片.SLDPRT" download>大垫片.SLDPRT</a>
-        <a href="Solidworks/减速器/大端盖.SLDPRT" download>大端盖.SLDPRT</a>
-        <a href="Solidworks/减速器/大通盖.SLDPRT" download>大通盖.SLDPRT</a>
-        <a href="Solidworks/减速器/小垫片.SLDPRT" download>小垫片.SLDPRT</a>
-        <a href="Solidworks/减速器/小端盖.SLDPRT" download>小端盖.SLDPRT</a>
-        <a href="Solidworks/减速器/小通盖.SLDPRT" download>小通盖.SLDPRT</a>
-        <a href="Solidworks/减速器/端盖.SLDPRT" download>端盖.SLDPRT</a>
-        <a href="Solidworks/减速器/螺塞.SLDPRT" download>螺塞.SLDPRT</a>
-        <a href="Solidworks/减速器/螺栓M20.SLDPRT" download>螺栓M20.SLDPRT</a>
-        <a href="Solidworks/减速器/螺栓M36.SLDPRT" download>螺栓M36.SLDPRT</a>
-        <a href="Solidworks/减速器/螺栓M36X100.SLDPRT" download>螺栓M36X100.SLDPRT</a>
-        <a href="Solidworks/减速器/螺母M20×2.5.SLDPRT" download>螺母M20×2.5.SLDPRT</a>
-        <a href="Solidworks/减速器/螺母M36×4.0.sldprt" download>螺母M36×4.0.sldprt</a>
-        <a href="Solidworks/减速器/通气塞.SLDPRT" download>通气塞.SLDPRT</a>
-
-        <div class="vitrine-folder">减速器 / 高速轴组件</div>
-        <a href="Solidworks/减速器/高速轴组件/减速器总装配1-吴俊超.SLDASM" download>减速器总装配1-吴俊超.SLDASM</a>
-        <a href="Solidworks/减速器/高速轴组件/小齿轮.SLDPRT" download>小齿轮.SLDPRT</a>
-        <a href="Solidworks/减速器/高速轴组件/高速轴.SLDPRT" download>高速轴.SLDPRT</a>
-        <a href="Solidworks/减速器/高速轴组件/高速轴套筒.SLDPRT" download>高速轴套筒.SLDPRT</a>
-        <a href="Solidworks/减速器/高速轴组件/高速轴组件.SLDASM" download>高速轴组件.SLDASM</a>
-        <a href="Solidworks/减速器/高速轴组件/高速键.SLDPRT" download>高速键.SLDPRT</a>
-
-        <div class="vitrine-folder">减速器 / 高速轴组件 / 高速轴轴承</div>
-        <a href="Solidworks/减速器/高速轴组件/高速轴轴承/高速轴轴承.SLDASM" download>高速轴轴承.SLDASM</a>
-        <a href="Solidworks/减速器/高速轴组件/高速轴轴承/高速轴轴承保持架.SLDPRT" download>高速轴轴承保持架.SLDPRT</a>
-        <a href="Solidworks/减速器/高速轴组件/高速轴轴承/高速轴轴承外圈.SLDPRT" download>高速轴轴承外圈.SLDPRT</a>
-        <a href="Solidworks/减速器/高速轴组件/高速轴轴承/高速轴轴承滚珠.SLDPRT" download>高速轴轴承滚珠.SLDPRT</a>
-        <a href="Solidworks/减速器/高速轴组件/高速轴轴承/高速轴轴承滚珠装配体.SLDASM" download>高速轴轴承滚珠装配体.SLDASM</a>
-
-        <div class="vitrine-folder">减速器 / 低速轴组件</div>
-        <a href="Solidworks/减速器/低速轴组件/低速轴.SLDPRT" download>低速轴.SLDPRT</a>
-        <a href="Solidworks/减速器/低速轴组件/低速键.SLDPRT" download>低速键.SLDPRT</a>
-        <a href="Solidworks/减速器/低速轴组件/半成品2.SLDPRT" download>半成品2.SLDPRT</a>
-        <a href="Solidworks/减速器/低速轴组件/大齿轮.SLDPRT" download>大齿轮.SLDPRT</a>
-        <a href="Solidworks/减速器/低速轴组件/套筒.SLDPRT" download>套筒.SLDPRT</a>
-        <a href="Solidworks/减速器/低速轴组件/涡轮减速器-吴俊超.SLDPRT" download>涡轮减速器-吴俊超.SLDPRT</a>
-        <a href="Solidworks/减速器/低速轴组件/装配体2吴俊超.SLDASM" download>装配体2吴俊超.SLDASM</a>
-        <a href="Solidworks/减速器/低速轴组件/齿轮片-吴俊超.SLDPRT" download>齿轮片-吴俊超.SLDPRT</a>
-        <a href="Solidworks/减速器/低速轴组件/齿轮箱体-吴俊超.SLDPRT" download>齿轮箱体-吴俊超.SLDPRT</a>
-
-        <div class="vitrine-folder">减速器 / 低速轴组件 / 低速轴轴承</div>
-        <a href="Solidworks/减速器/低速轴组件/低速轴轴承/低速轴轴承.SLDASM" download>低速轴轴承.SLDASM</a>
-        <a href="Solidworks/减速器/低速轴组件/低速轴轴承/低速轴轴承保持架.SLDPRT" download>低速轴轴承保持架.SLDPRT</a>
-        <a href="Solidworks/减速器/低速轴组件/低速轴轴承/低速轴轴承外圈.SLDPRT" download>低速轴轴承外圈.SLDPRT</a>
-        <a href="Solidworks/减速器/低速轴组件/低速轴轴承/低速轴轴承滚珠.SLDPRT" download>低速轴轴承滚珠.SLDPRT</a>
-        <a href="Solidworks/减速器/低速轴组件/低速轴轴承/低速轴轴承滚珠装配体.SLDASM" download>低速轴轴承滚珠装配体.SLDASM</a>
-
-        <div class="vitrine-folder">单缸活塞机构</div>
-        <a href="Solidworks/单缸活塞机构/单缸活塞装配.SLDASM" download>单缸活塞装配.SLDASM</a>
-        <a href="Solidworks/单缸活塞机构/支撑.SLDPRT" download>支撑.SLDPRT</a>
-        <a href="Solidworks/单缸活塞机构/曲轴.SLDPRT" download>曲轴.SLDPRT</a>
-        <a href="Solidworks/单缸活塞机构/气缸体.SLDPRT" download>气缸体.SLDPRT</a>
-        <a href="Solidworks/单缸活塞机构/活塞.SLDPRT" download>活塞.SLDPRT</a>
-        <a href="Solidworks/单缸活塞机构/考试1111-吴俊超.SLDPRT" download>考试1111-吴俊超.SLDPRT</a>
-        <a href="Solidworks/单缸活塞机构/装配体5半成品.SLDASM" download>装配体5半成品.SLDASM</a>
-        <a href="Solidworks/单缸活塞机构/连杆.SLDPRT" download>连杆.SLDPRT</a>
-
-        <div class="vitrine-folder">液压夹具体</div>
-        <a href="Solidworks/液压夹具体/Axe.SLDPRT" download>Axe.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/Cache en plastique.SLDPRT" download>Cache en plastique.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/Corps.SLDPRT" download>Corps.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/Joint torique.SLDPRT" download>Joint torique.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/Levier.SLDPRT" download>Levier.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/Piston Hgd.SLDPRT" download>Piston Hgd.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/Piston.SLDPRT" download>Piston.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/couvercle.SLDPRT" download>couvercle.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/fond.SLDPRT" download>fond.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/joint de piston.SLDPRT" download>joint de piston.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/mors.SLDPRT" download>mors.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/petit joint de piston.SLDPRT" download>petit joint de piston.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/pince type HGD.SLDASM" download>pince type HGD.SLDASM</a>
-        <a href="Solidworks/液压夹具体/piston et joints.SLDASM" download>piston et joints.SLDASM</a>
-        <a href="Solidworks/液压夹具体/segment magnetique.SLDPRT" download>segment magnetique.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/拉伸切除控制零件.SLDPRT" download>拉伸切除控制零件.SLDPRT</a>
-        <a href="Solidworks/液压夹具体/液压夹具体.SLDASM" download>液压夹具体.SLDASM</a>
-
-        <div class="vitrine-folder">螺栓联接</div>
-        <a href="Solidworks/螺栓联接/20弹簧垫片.sldprt" download>20弹簧垫片.sldprt</a>
-        <a href="Solidworks/螺栓联接/M20×90螺栓.sldprt" download>M20×90螺栓.sldprt</a>
-        <a href="Solidworks/螺栓联接/M20螺母.sldprt" download>M20螺母.sldprt</a>
-        <a href="Solidworks/螺栓联接/盖板.SLDPRT" download>盖板.SLDPRT</a>
-        <a href="Solidworks/螺栓联接/缸体.SLDPRT" download>缸体.SLDPRT</a>
-
-        <div class="vitrine-folder">齿轮配合装配</div>
-        <a href="Solidworks/齿轮配合装配/m0.6z23.SLDPRT" download>m0.6z23.SLDPRT</a>
-        <a href="Solidworks/齿轮配合装配/m0.6z29.SLDPRT" download>m0.6z29.SLDPRT</a>
-        <a href="Solidworks/齿轮配合装配/大齿轮轴.SLDPRT" download>大齿轮轴.SLDPRT</a>
-        <a href="Solidworks/齿轮配合装配/小齿轮轴.SLDPRT" download>小齿轮轴.SLDPRT</a>
-        <a href="Solidworks/齿轮配合装配/薄壁测板.SLDPRT" download>薄壁测板.SLDPRT</a>
-      </div>
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+        <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+        <div class="lightbox-content">
+            <img id="lightboxImg" src="" alt="">
+            <p class="lightbox-caption" id="lightboxCaption"></p>
+        </div>
     </div>
-  </div>
-</section>
 
-<!-- QR Code & Visit Card -->
-<section class="visit-card">
-  <div class="visit-inner">
-    <div class="visit-info">
-      <span class="visit-label">— 在线展厅 —</span>
-      <h2>扫码访问数字展馆</h2>
-      <p class="visit-desc">手机扫描二维码，随时随地查阅全部材料</p>
-      <a class="visit-link" href="https://wuj4374-boop.github.io/certificates/" target="_blank">https://wuj4374-boop.github.io/certificates/</a>
-    </div>
-    <div class="visit-qr">
-      <img src="qrcode.png" alt="展馆二维码">
-      <span class="visit-scan">扫一扫 · 浏览展厅</span>
-    </div>
-  </div>
-</section>
-
-<footer class="gallery-footer">
-  <div class="f-ornament"><span></span><i></i><span></span></div>
-  <p>© 2026 吴俊超 · 材料证明数字展馆 &nbsp;|&nbsp; 所有材料真实有效</p>
-</footer>
-
-<!-- Viewing Room (Lightbox) -->
-<div class="viewing-room" id="viewingRoom" onclick="closeViewingRoom(event)">
-  <button class="vr-close" onclick="closeViewingRoom()">×</button>
-  <button class="vr-nav vr-prev" onclick="changeView(-1)">‹</button>
-  <img class="vr-content" id="vrImage" alt="">
-  <button class="vr-nav vr-next" onclick="changeView(1)">›</button>
-  <div class="vr-counter" id="vrCounter"></div>
-</div>
-
-<script>
-const exhibitImages = [
-  "1193a5b8a266cd8c96aeae2e65bff04d.jpg",
-  "6a27b51c157f8b76ea7c345851a469e9.jpg",
-  "921244316addf835d39cf58a52ff25fd.jpg",
-  "ac01b796f6519456877d7b23ad661da1.jpg",
-  "d02f06f4addbf39bde3a223cc59a75d0.jpg",
-  "d980ad57474db3089f01ea93fc0b8c41.jpg",
-  "9d07e0859a319448a691587ee1e5c2cb.jpg",
-  "f9d15baf3b11c1e6b17efbd02a0b24e8.jpg"
-];
-
-let vrIndex = 0;
-
-function openViewingRoom(index) {
-  vrIndex = index;
-  const room = document.getElementById('viewingRoom');
-  document.getElementById('vrImage').src = exhibitImages[vrIndex];
-  document.getElementById('vrCounter').textContent = (vrIndex + 1) + ' / ' + exhibitImages.length;
-  room.classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeViewingRoom(e) {
-  if (e && e.target !== e.currentTarget) return;
-  document.getElementById('viewingRoom').classList.remove('active');
-  document.body.style.overflow = '';
-}
-
-function changeView(dir) {
-  vrIndex = (vrIndex + dir + exhibitImages.length) % exhibitImages.length;
-  document.getElementById('vrImage').src = exhibitImages[vrIndex];
-  document.getElementById('vrCounter').textContent = (vrIndex + 1) + ' / ' + exhibitImages.length;
-}
-
-document.addEventListener('keydown', function(e) {
-  const room = document.getElementById('viewingRoom');
-  if (!room.classList.contains('active')) return;
-  if (e.key === 'Escape') closeViewingRoom();
-  if (e.key === 'ArrowLeft') changeView(-1);
-  if (e.key === 'ArrowRight') changeView(1);
-});
-
-/* ===== Intersection Observer for reveal ===== */
-const revealExhibits = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('reveal');
-      revealExhibits.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
-
-document.querySelectorAll('.exhibit').forEach(el => revealExhibits.observe(el));
-
-const revealArchive = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('reveal');
-      revealArchive.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
-
-document.querySelectorAll('.archive').forEach(el => revealArchive.observe(el));
-
-// Vitrine cards stagger
-const revealVitrines = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('reveal');
-      revealVitrines.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
-
-document.querySelectorAll('.vitrine').forEach((el, i) => {
-  revealVitrines.observe(el);
-  el.style.transitionDelay = (i * 0.12) + 's';
-});
-
-// Visit card reveal
-const revealVisit = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('reveal');
-      revealVisit.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.08, rootMargin: '0px 0px -60px 0px' });
-
-document.querySelectorAll('.visit-card').forEach(el => revealVisit.observe(el));
-
-/* ===== Loading ===== */
-window.addEventListener('load', function() {
-  setTimeout(() => {
-    document.getElementById('loadCurtain').classList.add('done');
-  }, 600);
-});
-
-// Safety fallback
-setTimeout(() => {
-  document.querySelectorAll('.exhibit:not(.reveal)').forEach(el => el.classList.add('reveal'));
-  document.querySelectorAll('.archive:not(.reveal)').forEach(el => el.classList.add('reveal'));
-  document.querySelectorAll('.vitrine:not(.reveal)').forEach(el => el.classList.add('reveal'));
-  document.querySelectorAll('.visit-card:not(.reveal)').forEach(el => el.classList.add('reveal'));
-}, 6000);
-</script>
-
+    <script src="js/main.js"></script>
 </body>
 </html>
