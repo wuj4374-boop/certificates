@@ -128,3 +128,38 @@ document.querySelectorAll('.nav-links a').forEach(link => {
         }
     });
 });
+
+// ===== QR Code =====
+let qrGenerated = false;
+
+function toggleQR() {
+    const modal = document.getElementById('qrModal');
+    modal.classList.toggle('active');
+    document.body.style.overflow = modal.classList.contains('active') ? 'hidden' : '';
+
+    if (!qrGenerated && modal.classList.contains('active')) {
+        generateQR();
+    }
+}
+
+function closeQR(e) {
+    if (e && e.target !== document.getElementById('qrModal')) return;
+    const modal = document.getElementById('qrModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function generateQR() {
+    const url = window.location.href;
+    document.getElementById('qrUrl').textContent = url;
+    const container = document.getElementById('qrcode');
+    container.innerHTML = '';
+    QRCode.toCanvas(url, { width: 200, margin: 1, color: { dark: '#1a1a1a', light: '#ffffff' } }, function(err, canvas) {
+        if (err) {
+            container.innerHTML = '<p style="color:#999;font-size:13px;">二维码加载失败</p>';
+            return;
+        }
+        container.appendChild(canvas);
+    });
+    qrGenerated = true;
+}

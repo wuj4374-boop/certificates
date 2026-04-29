@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>孙可慧的证明小屋</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
 <body>
     <!-- Navigation -->
@@ -127,6 +128,25 @@
             </div>
         </div>
     </section>
+
+    <!-- QR Code Button -->
+    <div class="qr-float-btn" id="qrFloatBtn" onclick="toggleQR()">
+        <span>二维码</span>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="qr-modal" id="qrModal" onclick="closeQR(event)">
+        <div class="qr-modal-content" onclick="event.stopPropagation()">
+            <button class="qr-close" onclick="closeQR()">✕</button>
+            <h3 class="qr-title">扫码访问</h3>
+            <p class="qr-desc">手机扫码即可打开本页面</p>
+            <div class="qr-code-wrapper">
+                <div id="qrcode"></div>
+            </div>
+            <p class="qr-url" id="qrUrl"></p>
+            <p class="qr-hint">国内用户可长按二维码图片保存后分享</p>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
