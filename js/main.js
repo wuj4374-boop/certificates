@@ -35,10 +35,14 @@ certificates.forEach((cert, index) => {
     img.loading = 'lazy';
     img.onerror = function() {
         this.style.display = 'none';
-        card.style.background = '#f0f0f0';
+        card.style.background = '#181820';
+        card.style.color = '#d4d4d4';
         card.style.display = 'flex';
         card.style.alignItems = 'center';
         card.style.justifyContent = 'center';
+        card.style.padding = '16px';
+        card.style.fontSize = '13px';
+        card.style.textAlign = 'center';
         card.textContent = cert.name;
     };
 
